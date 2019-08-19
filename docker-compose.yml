@@ -12,10 +12,10 @@ services:
     build:
       dockerfile: Dockerfile
       context: .
-    command: pipenv run python3 /root/bot/redis_test.py
+    command: pipenv run python3 ./lunch_bot.py
     volumes:
-      - ./bot:/root/bot
-    working_dir: /root
+      - ./lunch_bot:/root/lunch_bot
+    working_dir: /root/lunch_bot
 
 volumes:
   redis-data:
