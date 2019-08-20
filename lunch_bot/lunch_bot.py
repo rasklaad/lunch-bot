@@ -1,20 +1,28 @@
 import random
 import configparser
+import redis
 
 from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
 import telegram
 import logging
-
-
-places = ['KFC', 'Шаверма на Чкаловском', 'Китайцы', 'Корейцы', 'Итальянское место, где тупят официанты',
-          'Макдональдс. Илья, привет!', 'Кетчап', 'Чито гврито']
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 
 logger = logging.getLogger(__name__)
 config = configparser.ConfigParser()
-config.read('config.ini')
+config.read('../config.ini')
+db = redis.Redis(host='redis')
+
+
+def get_redis():
+    return db
+
+
+def get_places(update):
+    db = get_redis()
+    places = db.smembers(update.message.chat_id)
+    return tuple(map(lambda x: x.decode('utf-8'), places))
 
 
 def start(bot, update):
@@ -32,20 +40,23 @@ def help(bot, update):
 
 
 def roll(bot, update):
-    # print(update.message.chat_id)
-    # print(bot.get_chat(update.message.chat_id))
+    places = get_places(update)
+    #logger.info(update.message.chat_id)
     update.message.reply_text(random.choice(places))
 
 def list_handler(bot, update):
-    update.message.reply_text('\n'.join(places))
+    #logger.info(places)
+    update.message.reply_text('\n'.join(get_places(update)))
 
 def add(bot, update, **args):
+    db = get_redis()
+    key = update.message.chat_id
     if not args or not args['args'] or len(args['args']) == 0:
         update.message.reply_text('Нужно задать имя местечка, например, так: "/add Кафе у Армена"')
         return
 
     new_place = ' '.join(args['args'])
-    places.append(new_place)
+    db.sadd(key, new_place)
     update.message.reply_text('Местечко "' + new_place + '" добавлено')
 
 def error(bot, update, error):
