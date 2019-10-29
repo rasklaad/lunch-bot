@@ -33,6 +33,7 @@ def help(bot, update):
      /list                     Вывести весь список мест
      /add <место>              Добавить место
      /remove <место>           Удалить место
+     /best                     Best of 3
 """)
 
 
@@ -40,6 +41,12 @@ def roll(bot, update):
     places = get_places(update)
     #logger.info(update.message.chat_id)
     update.message.reply_text(random.choice(places))
+
+def best_of_3(bot, update):
+    places = get_places(update)
+    best = random.sample(places, 3)
+    update.message.reply_text('\n'.join(str(b) for b in best))
+    
 
 def list_handler(bot, update):
     #logger.info(places)
@@ -80,6 +87,7 @@ def main():
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))
     dp.add_handler(CommandHandler("roll", roll))
+    dp.add_handler(CommandHandler("best", best_of_3))
     dp.add_handler(CommandHandler("list", list_handler))
     dp.add_handler(CommandHandler("add", add, pass_args=True))
     dp.add_handler(CommandHandler("remove", remove, pass_args=True)) 
