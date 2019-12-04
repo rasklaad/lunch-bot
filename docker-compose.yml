@@ -2,6 +2,12 @@ version: '3'
 services:
   redis:
     image: redis:4.0.5-alpine
+    deploy:
+      restart_policy:
+        condition: any
+        delay: 60s
+    ports:
+      - 6379:6379
     command: ["redis-server", "--appendonly", "yes"]
     hostname: redis
     volumes:
@@ -10,6 +16,10 @@ services:
     build:
       dockerfile: Dockerfile
       context: .
+    deploy:
+      restart_policy:
+        condition: any
+        delay: 60s
     command: pipenv run python3 ./lunch_bot.py
     volumes:
       - ./lunch_bot:/root/lunch_bot
